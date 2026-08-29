@@ -21,9 +21,15 @@ Daraz-style e-commerce built with **MongoDB**, **Express**, **React**, and **Nod
 ```bash
 cp .env.example .env
 npm install
-cd client && npm install && cd ..
 npm run seed
 npm run dev
+```
+
+`npm install` at the repo root also installs `client/` dependencies (via `postinstall`). If build fails with `vite: command not found`, run:
+
+```bash
+npm install --prefix client
+npm run build
 ```
 
 - **React app:** http://127.0.0.1:5173  
