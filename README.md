@@ -45,7 +45,17 @@ set NODE_ENV=production
 npm start
 ```
 
-Serves React build from `client/dist` on port 8080.
+Serves React build from `client/dist` on port 8080. First `/api/store` call auto-seeds MongoDB from `data/store.json` if empty.
+
+### Deploy (Render)
+
+1. Create a free [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) cluster and copy the connection string (`MONGODB_URI`).
+2. Push this repo to GitHub.
+3. On [Render](https://render.com): **New → Blueprint** → select this repo (`render.yaml`), or **New → Web Service** with:
+   - Build: `npm install && npm run build`
+   - Start: `npm start`
+4. Set env vars: `NODE_ENV=production`, `MONGODB_URI=...`, `ADMIN_PASSWORD=...`
+5. After deploy, open `https://YOUR-APP.onrender.com` and `/admin`.
 
 ## Routes (React)
 

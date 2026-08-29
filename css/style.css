@@ -5591,6 +5591,99 @@ main.main--contact {
   color: #f85606;
 }
 
+.admin-panel__nav-btn {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: #fafafa;
+  border: 1px solid #eeeeee;
+  color: #424242;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.admin-panel__nav-btn:hover,
+.admin-panel__nav-btn.is-active {
+  border-color: #f85606;
+  color: #f85606;
+  background: #fff7f2;
+}
+
+.admin-panel__quick {
+  margin: 0 0 1rem;
+  padding: 12px 14px;
+  background: #fff7f2;
+  border: 1px solid #ffd6bf;
+  border-radius: 8px;
+}
+
+.admin-panel__quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: center;
+}
+
+.admin-panel__easy-steps {
+  margin: 0 0 0.75rem;
+  color: #757575;
+  font-size: 0.88rem;
+  max-width: 720px;
+}
+
+.admin-panel__easy-box {
+  display: grid;
+  gap: 10px;
+  max-width: 720px;
+  margin-top: 8px;
+  padding: 14px;
+  background: #fff7f2;
+  border: 1px solid #ffd6bf;
+  border-radius: 8px;
+}
+
+.admin-panel__easy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.admin-panel__more {
+  margin-top: 1rem;
+  max-width: 720px;
+}
+
+.admin-panel__more > summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.admin-panel__body [data-admin-tab] {
+  display: none;
+}
+
+.admin-panel__body--contact [data-admin-tab="contact"],
+.admin-panel__body--topbar [data-admin-tab="topbar"],
+.admin-panel__body--sidebar-categories [data-admin-tab="sidebar-categories"],
+.admin-panel__body--seller [data-admin-tab="seller"],
+.admin-panel__body--cart [data-admin-tab="cart"],
+.admin-panel__body--home [data-admin-tab="home"],
+.admin-panel__body--headphone [data-admin-tab="headphone"],
+.admin-panel__body--tshirt [data-admin-tab="tshirt"],
+.admin-panel__body--watch [data-admin-tab="watch"],
+.admin-panel__body--smartwatch [data-admin-tab="smartwatch"],
+.admin-panel__body--bra [data-admin-tab="bra"],
+.admin-panel__body--jerseys [data-admin-tab="jerseys"],
+.admin-panel__body--catalog [data-admin-tab="catalog"] {
+  display: block;
+}
+
 .admin-panel__body {
   max-width: 980px;
   margin: 0 auto;

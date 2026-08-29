@@ -1,20 +1,49 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useStore } from "../context/StoreContext";
 import { DEFAULT_CONTACT, mergeContactSettings } from "../utils/contactDefaults";
 
 const ADMIN_SECTIONS = [
-  { id: "contact", label: "Contact page" },
-  { id: "sidebar-categories", label: "Sidebar categories" },
-  { id: "seller", label: "Seller page" },
-  { id: "cart", label: "Cart" },
+  { id: "contact", label: "Shop & Contact" },
   { id: "topbar", label: "Top bar" },
+  { id: "sidebar-categories", label: "Sidebar" },
+  { id: "seller", label: "Seller" },
+  { id: "cart", label: "Cart" },
+  { id: "home", label: "Home" },
   { id: "headphone", label: "Headphone" },
   { id: "tshirt", label: "T-Shirt" },
-  { id: "bra", label: "Bra" },
   { id: "watch", label: "Watch" },
   { id: "smartwatch", label: "Smart Watch" },
+  { id: "bra", label: "Bra" },
   { id: "jerseys", label: "Jerseys" },
+  { id: "catalog", label: "Shoes & stickers" },
 ];
+
+function sectionFromHash() {
+  const hash = (window.location.hash || "").replace(/^#/, "");
+  if (!hash.startsWith("admin-")) return "contact";
+  const id = hash.slice("admin-".length);
+  const aliases = {
+    contact: "contact",
+    topbar: "topbar",
+    seller: "seller",
+    "sidebar-categories": "sidebar-categories",
+    cart: "cart",
+    home: "home",
+    headphone: "headphone",
+    tshirt: "tshirt",
+    watch: "watch",
+    smartwatch: "smartwatch",
+    bra: "bra",
+    jerseys: "jerseys",
+    "bike-stickers": "catalog",
+    catalog: "catalog",
+  };
+  return aliases[id] || (ADMIN_SECTIONS.some((s) => s.id === id) ? id : "contact");
+}
+
+function setAdminHash(sectionId) {
+  window.history.replaceState(null, "", `#admin-${sectionId}`);
+}
 
 export default function AdminPage() {
   const { store, loading, error, reloadStore } = useStore();
@@ -23,6 +52,27 @@ export default function AdminPage() {
   const [msg, setMsg] = useState("");
   const [draft, setDraft] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [activeSection, setActiveSection] = useState(() => sectionFromHash());
+
+  useEffect(() => {
+    const syncHash = () => setActiveSection(sectionFromHash());
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
+  }, []);
+
+  function goSection(sectionId) {
+    setActiveSection(sectionId);
+    setAdminHash(sectionId);
+  }
+
+  function setupWatchPage() {
+    const products = (draft || store)?.products || [];
+    const defaults = products.filter((p) => /^wm\d+$/i.test(p.id)).map((p) => p.id);
+    setDraft({ ...(draft || store), watchProductIds: defaults.length ? defaults : (draft || store)?.watchProductIds || [] });
+    setMsg("Watch products loaded — এখন Save store click করুন।");
+    goSection("watch");
+  }
 
   async function login(e) {
     e.preventDefault();
@@ -169,6 +219,36 @@ export default function AdminPage() {
       },
     });
     setMsg("Contact defaults loaded — click Save store to write MongoDB.");
+  }
+
+  function updateShopEasy({ siteName, siteNameBn, phone, whatsapp, email } = {}) {
+    const contactBase = { ...mergeContactSettings(s.settings), ...(s.settings?.contact || {}) };
+    const en = siteName !== undefined ? String(siteName).trim() : s.settings?.siteName || contactBase.brandName || "";
+    const bn = siteNameBn !== undefined ? String(siteNameBn).trim() || en : s.settings?.siteNameBn || contactBase.brandNameBn || en;
+    const phoneVal = phone !== undefined ? String(phone).trim() : contactBase.phone || s.settings?.whatsapp || "";
+    const whatsappVal = whatsapp !== undefined ? String(whatsapp).trim() : contactBase.whatsapp || s.settings?.whatsapp || phoneVal;
+    const emailVal = email !== undefined ? String(email).trim() : contactBase.email || "";
+    setDraft({
+      ...s,
+      settings: {
+        ...s.settings,
+        siteName: en,
+        siteNameBn: bn,
+        whatsapp: whatsappVal,
+        contact: {
+          ...contactBase,
+          ...s.settings?.contact,
+          brandName: en,
+          brandNameBn: bn,
+          headline: en,
+          headlineBn: bn,
+          copyrightName: en,
+          phone: phoneVal,
+          whatsapp: whatsappVal,
+          email: emailVal,
+        },
+      },
+    });
   }
 
   function updateProduct(id, patch) {
@@ -319,16 +399,44 @@ export default function AdminPage() {
 
       <nav className="admin-panel__nav" aria-label="Admin sections">
         {ADMIN_SECTIONS.map((section) => (
-          <a key={section.id} href={`#admin-${section.id}`}>
+          <button
+            key={section.id}
+            type="button"
+            className={`admin-panel__nav-btn${activeSection === section.id ? " is-active" : ""}`}
+            onClick={() => goSection(section.id)}
+          >
             {section.label}
-          </a>
+          </button>
         ))}
       </nav>
 
-      <div className="admin-panel__body">
-      <p className="admin-panel__note">
-        Full legacy admin: <code>/admin/index.html</code>
-      </p>
+      <div className={`admin-panel__body admin-panel__body--${activeSection}`}>
+      <div className="admin-panel__quick">
+        <strong>Quick (easy)</strong>
+        <div className="admin-panel__quick-actions">
+          {activeSection !== "contact" ? (
+            <button type="button" className="admin-panel__ghost-btn" onClick={() => goSection("contact")}>
+              Shop name / phone
+            </button>
+          ) : null}
+          <button type="button" className="admin-panel__ghost-btn" onClick={setupWatchPage}>
+            Setup Watch page
+          </button>
+          <button type="button" className="btn btn--primary" onClick={save} disabled={saving}>
+            {saving ? "Saving…" : "Save store"}
+          </button>
+          <a href="/" target="_blank" rel="noreferrer" className="admin-panel__preview-link">Site</a>
+          <a href="/watch" target="_blank" rel="noreferrer" className="admin-panel__preview-link">Watch</a>
+          <a href="/contact" target="_blank" rel="noreferrer" className="admin-panel__preview-link">Contact</a>
+        </div>
+      </div>
+      {activeSection !== "contact" ? (
+        <p className="admin-panel__note">
+          Full legacy admin: <code>/admin/index.html</code> · Tab change korle shudhu oi section dekhabe.
+        </p>
+      ) : null}
+
+      <div data-admin-tab="topbar">
       <h3 id="admin-topbar" style={{ marginTop: "1.5rem" }}>Top bar — Daraz header links</h3>
       <div style={{ display: "grid", gap: 10, maxWidth: 720, marginTop: 8 }}>
         <label>
@@ -676,7 +784,9 @@ export default function AdminPage() {
           </label>
         ))}
       </div>
+      </div>
 
+      <div data-admin-tab="seller">
       <h3 id="admin-seller" style={{ marginTop: "1.5rem" }}>Become a Seller page — <a href="/seller" target="_blank" rel="noreferrer">preview</a></h3>
       <p style={{ color: "#757575", fontSize: "0.88rem" }}>
         Grey Daraz Seller Center header + seller landing. Top link <strong>BECOME A SELLER</strong> should point to <code>/seller</code>.
@@ -886,7 +996,9 @@ export default function AdminPage() {
       >
         Add language
       </button>
+      </div>
 
+      <div data-admin-tab="sidebar-categories">
       <h3 id="admin-sidebar-categories" style={{ marginTop: "1.5rem" }}>Search sidebar categories ({s.sidebarCategoryIds?.length || 0})</h3>
       <p style={{ color: "#757575", fontSize: "0.88rem" }}>
         Catalog/search page-এর বাম sidebar <strong>Category</strong> list — checkbox দিয়ে show/hide। Order = উপর থেকে নিচে।
@@ -970,14 +1082,50 @@ export default function AdminPage() {
           Clear sidebar categories
         </button>
       </div>
+      </div>
 
-      <h3 id="admin-contact" style={{ marginTop: "1.5rem" }}>Contact page — <a href="/contact" target="_blank" rel="noreferrer">preview</a></h3>
+      <div data-admin-tab="contact">
+      <h3 id="admin-contact" style={{ marginTop: "0.5rem" }}>Shop settings (easy)</h3>
+      <p className="admin-panel__easy-steps">
+        ① নিচে ৫টা box পূরণ করুন → ② <strong>Save store</strong> → ③ <a href="/contact" target="_blank" rel="noreferrer">Contact page</a> check করুন
+      </p>
+      <div className="admin-panel__easy-box">
+        <label style={{ fontSize: "0.88rem" }}>
+          Shop name (English)
+          <input type="text" value={s.settings?.siteName || ""} placeholder="E-commerce Website" onChange={(e) => updateShopEasy({ siteName: e.target.value, siteNameBn: s.settings?.siteNameBn })} style={{ display: "block", width: "100%", marginTop: 4, padding: "8px 10px" }} />
+        </label>
+        <label style={{ fontSize: "0.88rem" }}>
+          Shop name (Bangla)
+          <input type="text" value={s.settings?.siteNameBn || ""} placeholder="ই-কমার্স ওয়েবসাইট" onChange={(e) => updateShopEasy({ siteName: s.settings?.siteName, siteNameBn: e.target.value })} style={{ display: "block", width: "100%", marginTop: 4, padding: "8px 10px" }} />
+        </label>
+        <label style={{ fontSize: "0.88rem" }}>
+          Phone
+          <input type="text" value={s.settings?.contact?.phone ?? contactMerged.phone ?? s.settings?.whatsapp ?? ""} placeholder="01343787983" onChange={(e) => updateShopEasy({ phone: e.target.value, whatsapp: s.settings?.contact?.whatsapp ?? contactMerged.whatsapp ?? e.target.value })} style={{ display: "block", width: "100%", marginTop: 4, padding: "8px 10px" }} />
+        </label>
+        <label style={{ fontSize: "0.88rem" }}>
+          WhatsApp number
+          <input type="text" value={s.settings?.contact?.whatsapp ?? contactMerged.whatsapp ?? s.settings?.whatsapp ?? ""} placeholder="01343787983" onChange={(e) => updateShopEasy({ whatsapp: e.target.value, phone: s.settings?.contact?.phone ?? contactMerged.phone ?? e.target.value })} style={{ display: "block", width: "100%", marginTop: 4, padding: "8px 10px" }} />
+        </label>
+        <label style={{ fontSize: "0.88rem" }}>
+          Email
+          <input type="email" value={s.settings?.contact?.email ?? contactMerged.email ?? ""} placeholder="support@ecommerce-demo.com" onChange={(e) => updateShopEasy({ email: e.target.value })} style={{ display: "block", width: "100%", marginTop: 4, padding: "8px 10px" }} />
+        </label>
+        <div className="admin-panel__easy-actions">
+          <button type="button" className="btn btn--primary" onClick={save} disabled={saving}>{saving ? "Saving…" : "Save store"}</button>
+          <a href="/contact" target="_blank" rel="noreferrer" className="admin-panel__preview-link">Contact preview</a>
+          <a href="/" target="_blank" rel="noreferrer" className="admin-panel__preview-link">Site</a>
+        </div>
+      </div>
+
+      <details className="admin-panel__more">
+        <summary>Advanced contact options (optional)</summary>
+      <h3 id="admin-contact-more" style={{ marginTop: "1rem" }}>Contact page — <a href="/contact" target="_blank" rel="noreferrer">preview</a></h3>
       <p style={{ color: "#757575", fontSize: "0.88rem" }}>
-        IoT-style contact page with WhatsApp/Call CTAs and footer columns. Edit text, phone, email, address, links, legal, and services below.
+        Extra contact text, map, footer links — উপরে <strong>Shop settings (easy)</strong> দিয়ে name/phone/WhatsApp/email already set থাকে।
       </p>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
         <button type="button" className="admin-panel__ghost-btn" onClick={loadContactDefaults}>
-          Load IoT contact defaults
+          Load contact defaults
         </button>
       </div>
       <div style={{ display: "grid", gap: 10, maxWidth: 720, marginTop: 8 }}>
@@ -1280,7 +1428,10 @@ export default function AdminPage() {
           Clear contact products
         </button>
       </div>
+      </details>
+      </div>
 
+      <div data-admin-tab="cart">
       <h3 id="admin-cart" style={{ marginTop: "1.5rem" }}>Cart — header icon &amp; cart page</h3>
       <p style={{ color: "#757575", fontSize: "0.88rem" }}>
         Daraz-style cart icon in header. Preview: <a href="/cart" target="_blank" rel="noreferrer">/cart</a>
@@ -1403,7 +1554,9 @@ export default function AdminPage() {
           />
         </label>
       </div>
+      </div>
 
+      <div data-admin-tab="home">
       <h3 id="admin-home" style={{ marginTop: "1.5rem" }}>Home page — <a href="/" target="_blank" rel="noreferrer">preview</a></h3>
       <p style={{ color: "#757575", fontSize: "0.88rem" }}>Daraz-style banners, flash sale, category strip &amp; Just For You grid.</p>
       <div style={{ display: "grid", gap: 8, maxWidth: 640, marginTop: 8 }}>
@@ -1551,7 +1704,9 @@ export default function AdminPage() {
           </label>
         ))}
       </div>
+      </div>
 
+      <div data-admin-tab="headphone">
       <h3 id="admin-headphone" style={{ marginTop: "1.5rem" }}>Headphone page ({s.landingProductIds?.length || 0}) — <a href="/headphone" target="_blank" rel="noreferrer">preview</a></h3>
       <p style={{ color: "#757575", fontSize: "0.88rem" }}>Products on <strong>/headphone</strong> (also <strong>/landing</strong>). Search &quot;headphone&quot; opens this page. Click product → full detail page.</p>
       <div className="check-grid">
@@ -1572,7 +1727,9 @@ export default function AdminPage() {
       </div>
 
       <ProductImageEditor products={headphoneProducts} title="Headphone images — প্রতিটি product আলাদা ছবি" />
+      </div>
 
+      <div data-admin-tab="tshirt">
       <h3 id="admin-tshirt" style={{ marginTop: "1.5rem" }}>T-Shirt page ({s.tshirtProductIds?.length || 0}) — <a href="/tshirt" target="_blank" rel="noreferrer">preview</a></h3>
     <p style={{ color: "#757575", fontSize: "0.88rem" }}>Products on <strong>/tshirt</strong>. Search &quot;t shirt&quot; also opens this page. Click product → full detail page.</p>
       <div className="check-grid">
@@ -1593,7 +1750,9 @@ export default function AdminPage() {
       </div>
 
       <ProductImageEditor products={tshirtProducts} title="T-Shirt images — প্রতিটি product আলাদা ছবি" />
+      </div>
 
+      <div data-admin-tab="watch">
       <h3 id="admin-watch" style={{ marginTop: "1.5rem" }}>Watch for Man ({s.watchProductIds?.length || 0}) — <a href="/watch" target="_blank" rel="noreferrer">preview</a></h3>
       <p style={{ color: "#757575", fontSize: "0.88rem" }}>Products on <strong>/watch</strong>. Search &quot;watch for man&quot; also opens this page. Click product → full detail page.</p>
       <div className="check-grid">
@@ -1614,7 +1773,9 @@ export default function AdminPage() {
       </div>
 
       <ProductImageEditor products={watchProducts} title="Watch for Man images — প্রতিটি product আলাদা ছবি" />
+      </div>
 
+      <div data-admin-tab="smartwatch">
       <h3 id="admin-smartwatch" style={{ marginTop: "1.5rem" }}>Smart Watch ({s.smartwatchProductIds?.length || 0}) — <a href="/smartwatch" target="_blank" rel="noreferrer">preview</a></h3>
       <p style={{ color: "#757575", fontSize: "0.88rem" }}>Products on <strong>/smartwatch</strong>. Search &quot;smart watch&quot; also opens this page. Click product → full detail page.</p>
       <div className="check-grid">
@@ -1635,7 +1796,9 @@ export default function AdminPage() {
       </div>
 
       <ProductImageEditor products={smartwatchProducts} title="Smart Watch images — প্রতিটি product আলাদা ছবি" />
+      </div>
 
+      <div data-admin-tab="bra">
       <h3 id="admin-bra" style={{ marginTop: "1.5rem" }}>Bra for Girls ({s.braProductIds?.length || 0}) — <a href="/bra" target="_blank" rel="noreferrer">preview</a></h3>
       <p style={{ color: "#757575", fontSize: "0.88rem" }}>Products on <strong>/bra</strong>. Search &quot;bra for girls&quot; also opens this page. Click product → full detail page.</p>
       <div className="check-grid">
@@ -1656,7 +1819,9 @@ export default function AdminPage() {
       </div>
 
       <ProductImageEditor products={braProducts} title="Bra for Girls images — প্রতিটি product আলাদা ছবি" />
+      </div>
 
+      <div data-admin-tab="jerseys">
       <h3 id="admin-jerseys" style={{ marginTop: "1.5rem" }}>Brazil Jersey ({s.brazilJerseyProductIds?.length || 0}) — <a href="/brazil-jersey" target="_blank" rel="noreferrer">preview</a></h3>
       <p style={{ color: "#757575", fontSize: "0.88rem" }}>
         Products on <strong>/brazil-jersey</strong>. Search &quot;brazil jersey 2026 world cup&quot; also opens this page.
@@ -1972,7 +2137,9 @@ export default function AdminPage() {
       </div>
 
       <ProductImageEditor products={spinJerseyProducts} title="Spin Jersey images — প্রতিটি product আলাদা ছবি" />
+      </div>
 
+      <div data-admin-tab="catalog">
       <h3 id="admin-bike-stickers" style={{ marginTop: "1.5rem" }}>Bike Stickers ({s.bikeStickerProductIds?.length || 0}) — <a href="/catalog?q=bike%20stickers" target="_blank" rel="noreferrer">preview</a></h3>
       <p style={{ color: "#757575", fontSize: "0.88rem" }}>
         Daraz-style catalog on <strong>/catalog?q=bike stickers</strong> and <strong>/bike-stickers</strong>.
@@ -2604,6 +2771,7 @@ export default function AdminPage() {
       </div>
 
       <ProductImageEditor products={shoesForGirlsSneakersBlackAndWhiteProducts} title="Shoes for Girls Sneakers Black and White images — প্রতিটি product আলাদা ছবি" />
+      </div>
       </div>
     </div>
   );

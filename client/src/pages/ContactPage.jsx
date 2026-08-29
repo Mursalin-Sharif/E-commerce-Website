@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
-import { contactMapEmbedUrl, mergeContactSettings } from "../utils/contactDefaults";
+import { contactBrandName, contactHeadline, contactMapEmbedUrl, mergeContactSettings } from "../utils/contactDefaults";
 import JfyProductGrid from "../components/JfyProductGrid";
 function pick(c, lang, enKey, bnKey) {
   if (lang === "bn") return c[bnKey] || c[enKey] || "";
@@ -36,7 +36,7 @@ export default function ContactPage() {
   const callText = phone ? `${callLabel} ${phone}` : callLabel;
 
   const heroEyebrow = pick(c, lang, "eyebrow", "eyebrowBn") || "CONTACT";
-  const heroTitle = pick(c, lang, "headline", "headlineBn") || "IoT Programmers";
+  const heroTitle = contactHeadline(c, settings, lang);
   const heroSubtitle = pick(c, lang, "subtitle", "subtitleBn") || "Get in touch. We respond fast.";
   const heroIntro =
     pick(c, lang, "intro", "introBn") ||
@@ -122,7 +122,7 @@ export default function ContactPage() {
       <footer className="contact-footer">
         <div className="contact-footer__inner">
           <div className="contact-footer__brand">
-            <p className="contact-footer__logo">{pick(c, lang, "brandName", "brandNameBn")}</p>
+            <p className="contact-footer__logo">{contactBrandName(c, settings, lang)}</p>
             <p className="contact-footer__tagline">{pick(c, lang, "tagline", "taglineBn")}</p>
             <p className="contact-footer__desc">{pick(c, lang, "description", "descriptionBn")}</p>
           </div>
@@ -192,7 +192,7 @@ export default function ContactPage() {
 
         <div className="contact-footer__copy">
           <p>
-            © {new Date().getFullYear()} {c.copyrightName || pick(c, lang, "brandName", "brandNameBn")}. All rights
+            © {new Date().getFullYear()} {c.copyrightName || contactBrandName(c, settings, lang)}. All rights
             reserved.
           </p>
         </div>

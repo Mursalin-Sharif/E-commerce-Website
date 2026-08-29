@@ -23,10 +23,8 @@ app.use((err, _req, res, next) => {
 
 app.use("/uploads", express.static(UPLOADS_DIR));
 app.use("/assets", express.static(path.join(ROOT, "assets")));
-app.use("/admin", express.static(path.join(ROOT, "admin"), { index: "index.html" }));
-app.get(["/admin", "/admin/"], (_req, res) => {
-  res.sendFile(path.join(ROOT, "admin", "index.html"));
-});
+// Legacy vanilla admin files at /admin/index.html (React SPA owns /admin in production)
+app.use("/admin", express.static(path.join(ROOT, "admin"), { index: false }));
 app.use("/css", express.static(path.join(ROOT, "css")));
 app.use("/api", apiRoutes);
 app.use("/api/admin", uploadRoutes);
@@ -59,7 +57,7 @@ Object.entries(legacyMap).forEach(([from, to]) => {
 
 if (process.env.NODE_ENV === "production" || require("fs").existsSync(CLIENT_DIST)) {
   app.use(express.static(CLIENT_DIST));
-  app.get(/^\/(?!api|uploads|assets|admin|css).*/, (_req, res) => {
+  app.get(/^\/(?!api|uploads|assets|css)(?!admin\/).*/, (_req, res) => {
     res.sendFile(path.join(CLIENT_DIST, "index.html"));
   });
 } else {
