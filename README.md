@@ -57,6 +57,18 @@ Serves React build from `client/dist` on port 8080. First `/api/store` call auto
 4. Set env vars: `NODE_ENV=production`, `MONGODB_URI=...`, `ADMIN_PASSWORD=...`
 5. After deploy, open `https://YOUR-APP.onrender.com` and `/admin`.
 
+### Deploy (Vercel)
+
+This app needs **MongoDB Atlas**. In Vercel project → Settings → Environment Variables set:
+
+- `MONGODB_URI` = Atlas connection string  
+- `ADMIN_PASSWORD` = your admin password  
+- `NODE_ENV` = `production`
+
+Build uses `client/` Vite (`vite` is a client dependency). Redeploy after pushing; if build still fails, set Install Command to:
+
+`npm install && npm install --prefix client --include=dev`
+
 ## Routes (React)
 
 | Path | Page |
