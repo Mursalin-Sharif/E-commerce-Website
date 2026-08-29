@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-commerce Website — Cart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <nav class="site-nav" id="site-nav"></nav>
+
+  <main>
+    <div class="container">
+      <h1 class="page-title" data-i18n="cart.title">Your cart</h1>
+      <div class="cart-panel" id="cart-panel"></div>
+      <p style="margin-top:1.25rem"><a class="btn btn--ghost" href="home.html" data-i18n="cart.continue">Continue shopping</a></p>
+    </div>
+  </main>
+
+  <footer class="site-footer" id="site-footer"></footer>
+  <div class="whatsapp-float" id="whatsapp-float"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/layout.js"></script>
+  <script>
+    function renderCart() {
+      const panel = document.getElementById("cart-panel");
+      const items = getCart();
+      if (!items.length) {
+        panel.innerHTML = `<p class="empty-state" data-i18n="cart.empty">${t("cart.empty")}</p>`;
+        return;
+      }
+
+      const rows = items
+        .map((item) => {
+          const p = getProductById(item.id);
+          if (!p) return "";
+          return `
+            <div class="cart-item" data-id="${p.id}">
+              <div class="cart-item__thumb" style="${productThumbStyle(p)}">${productLabel(p).charAt(0)}</div>
+              <div>
+                <p class="cart-item__name">${productLabel(p)}</p>
+                <p class="cart-item__meta">${formatPrice(p.price)} · ${formatPrice(p.price * item.qty)}</p>
+              </div>
+              <div class="cart-item__actions">
+                <label>
+                  <span data-i18n="cart.qty">${t("cart.qty")}</span>
+                  <input class="qty-input" type="number" min="1" value="${item.qty}" data-id="${p.id}" />
+                </label>
+                <button type="button" class="header__btn remove-btn" data-id="${p.id}" data-i18n="cart.remove">${t("cart.remove")}</button>
+              </div>
+            </div>`;
+        })
+        .join("");
+
+      panel.innerHTML = `
+        ${rows}
+        <div class="cart-total">
+          <span data-i18n="cart.total">${t("cart.total")}</span>
+          <span>${formatPrice(cartTotal())}</span>
+        </div>`;
+
+      panel.querySelectorAll(".qty-input").forEach((input) => {
+        input.addEventListener("change", () => setCartQty(input.dataset.id, input.value));
+      });
+      panel.querySelectorAll(".remove-btn").forEach((btn) => {
+        btn.addEventListener("click", () => removeFromCart(btn.dataset.id));
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", renderCart);
+    document.addEventListener("cartchange", renderCart);
+    document.addEventListener("langchange", renderCart);
+  </script>
+</body>
+</html>

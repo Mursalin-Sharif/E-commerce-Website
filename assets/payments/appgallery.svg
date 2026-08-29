@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="148" height="44" viewBox="0 0 148 44">
+  <rect width="148" height="44" rx="6" fill="#111"/>
+  <circle cx="24" cy="22" r="10" fill="#cf0a2c"/>
+  <path fill="#fff" d="M20 16h8v3h-2.5v10H23V19H20z"/>
+  <text x="42" y="17" fill="#fff" font-family="Arial,sans-serif" font-size="7.5">EXPLORE IT ON</text>
+  <text x="42" y="31" fill="#fff" font-family="Arial,sans-serif" font-size="13" font-weight="700">AppGallery</text>
+</svg>

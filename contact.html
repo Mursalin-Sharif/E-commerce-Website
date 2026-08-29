@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-commerce Website — Contact</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <nav class="site-nav" id="site-nav"></nav>
+
+  <main>
+    <div class="container">
+      <h1 class="page-title" data-i18n="contact.title">Contact us</h1>
+      <p class="page-lead">Send a message — this is a client-side demo form.</p>
+      <div class="form-card">
+        <div class="form-success" id="contact-success" hidden data-i18n="contact.success">Thanks! Your message was sent (demo).</div>
+        <form id="contact-form" novalidate>
+          <div class="form-group">
+            <label for="name" data-i18n="contact.name">Name</label>
+            <input id="name" name="name" type="text" required autocomplete="name" />
+            <p class="form-error" id="name-error" hidden></p>
+          </div>
+          <div class="form-group">
+            <label for="email" data-i18n="contact.email">Email</label>
+            <input id="email" name="email" type="email" required autocomplete="email" />
+            <p class="form-error" id="email-error" hidden></p>
+          </div>
+          <div class="form-group">
+            <label for="message" data-i18n="contact.message">Message</label>
+            <textarea id="message" name="message" required></textarea>
+            <p class="form-error" id="message-error" hidden></p>
+          </div>
+          <button class="btn btn--primary" type="submit" data-i18n="contact.send">Send message</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer" id="site-footer"></footer>
+  <div class="whatsapp-float" id="whatsapp-float"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/layout.js"></script>
+  <script>
+    document.getElementById("contact-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name");
+      const email = document.getElementById("email");
+      const message = document.getElementById("message");
+      let ok = true;
+
+      function showErr(id, msg) {
+        const el = document.getElementById(id);
+        el.hidden = !msg;
+        el.textContent = msg || "";
+      }
+
+      showErr("name-error", name.value.trim() ? "" : (getLang() === "bn" ? "নাম প্রয়োজন" : "Name is required"));
+      if (!name.value.trim()) ok = false;
+
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim());
+      showErr("email-error", emailOk ? "" : (getLang() === "bn" ? "সঠিক ইমেইল দিন" : "Enter a valid email"));
+      if (!emailOk) ok = false;
+
+      showErr("message-error", message.value.trim().length >= 5 ? "" : (getLang() === "bn" ? "বার্তা অন্তত ৫ অক্ষরের হতে হবে" : "Message must be at least 5 characters"));
+      if (message.value.trim().length < 5) ok = false;
+
+      if (!ok) return;
+      document.getElementById("contact-success").hidden = false;
+      e.target.reset();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+const fs = require("fs");
+const path = require("path");
+
+const STORE_PATH = path.join(__dirname, "..", "data", "store.json");
+const store = JSON.parse(fs.readFileSync(STORE_PATH, "utf8"));
+
+const DEFAULT_SIDEBAR = [
+  "shoes",
+  "apparel",
+  "sportswear",
+  "sports",
+  "smartwatches",
+  "smartwatch-straps",
+  "smartwatch-docks",
+  "smartwatch-protectors",
+  "smartwatch-cases",
+  "phone-cases",
+  "phone-protectors",
+  "fitness-trackers",
+  "wall-chargers",
+  "phone-cables",
+  "smartphone",
+  "watch-accessories",
+  "tablet-cases",
+  "camera-protectors",
+  "electronics",
+  "eyewear",
+  "jewelry",
+  "beauty",
+  "personal-care",
+  "health",
+  "kids",
+  "luggage",
+  "home-garden",
+  "furniture",
+  "lighting",
+  "appliances",
+  "auto-supplies",
+  "vehicle-parts",
+  "tools",
+  "safety",
+  "food",
+  "pets",
+  "office",
+  "gifts",
+  "ent-care",
+  "hoses-pipes",
+  "water-systems",
+  "coolers",
+  "packaging",
+  "industrial",
+  "agriculture",
+  "construction-mach",
+  "commercial",
+  "renewable",
+  "electrical",
+  "power",
+  "components",
+  "vehicles",
+  "raw-materials",
+  "fabrication",
+  "soda-makers",
+  "powdered-drinks",
+  "juice-drinks",
+  "soft-drinks",
+  "baby-nasal",
+  "health-accessories",
+  "material-handling",
+  "testing",
+  "real-estate",
+  "belts-hoses",
+];
+
+const validIds = new Set((store.categories || []).map((c) => c.id));
+store.sidebarCategoryIds = DEFAULT_SIDEBAR.filter((id) => validIds.has(id));
+
+fs.writeFileSync(STORE_PATH, JSON.stringify(store, null, 2));
+console.log("Updated sidebarCategoryIds:", store.sidebarCategoryIds.length);

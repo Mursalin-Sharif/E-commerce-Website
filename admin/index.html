@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — E-commerce</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <div id="login-screen" class="login-screen">
+    <form id="login-form" class="login-card">
+      <h1>Admin Dashboard</h1>
+      <p>Manage your Daraz-style store content</p>
+      <label>Password<input type="password" id="login-password" required autocomplete="current-password" /></label>
+      <button type="submit">Sign in</button>
+      <p class="login-hint">Default password: <code>admin123</code></p>
+      <p class="login-error" id="login-error" hidden></p>
+    </form>
+  </div>
+
+  <div id="admin-app" class="admin-app" hidden>
+    <aside class="admin-sidebar">
+      <div class="admin-brand">Store Admin</div>
+      <nav class="admin-nav" id="admin-nav">
+        <button type="button" data-panel="settings" class="is-active">Settings</button>
+        <button type="button" data-panel="landing">Landing</button>
+        <button type="button" data-panel="header">Header</button>
+        <button type="button" data-panel="footer">Footer</button>
+        <button type="button" data-panel="categories">Categories</button>
+        <button type="button" data-panel="products">Products</button>
+        <button type="button" data-panel="banners">Banners</button>
+        <button type="button" data-panel="flash">Flash Sale</button>
+        <button type="button" data-panel="home">Homepage</button>
+        <button type="button" data-panel="search">Search</button>
+        <button type="button" data-panel="reviews">Reviews</button>
+      </nav>
+      <div class="admin-sidebar__foot">
+        <a href="/index.html" target="_blank">View site ↗</a>
+        <button type="button" id="logout-btn">Logout</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-top">
+        <h2 id="panel-title">Settings</h2>
+        <button type="button" class="btn-save" id="save-all-btn">Save changes</button>
+      </header>
+      <div id="panel-content" class="panel-content"></div>
+      <p class="save-status" id="save-status"></p>
+    </main>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
