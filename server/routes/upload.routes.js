@@ -4,11 +4,15 @@ const path = require("path");
 const { auth } = require("../middleware/auth");
 
 const router = express.Router();
-const UPLOADS_DIR = path.join(__dirname, "..", "..", "uploads");
+const UPLOADS_DIR = process.env.VERCEL
+  ? path.join("/tmp", "uploads")
+  : path.join(__dirname, "..", "..", "uploads");
 const ALLOWED_UPLOAD_EXT = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".mp4", ".webm"]);
 
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+} catch (err) {
+  console.warn("Uploads directory unavailable:", err.message);
 }
 
 router.post("/upload", auth, (req, res) => {

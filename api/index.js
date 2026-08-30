@@ -18,6 +18,11 @@ async function getApp() {
 }
 
 module.exports = async (req, res) => {
-  const expressApp = await getApp();
-  return expressApp(req, res);
+  try {
+    const expressApp = await getApp();
+    return expressApp(req, res);
+  } catch (err) {
+    console.error("API handler error:", err);
+    res.status(500).json({ error: err.message || "Internal server error" });
+  }
 };
