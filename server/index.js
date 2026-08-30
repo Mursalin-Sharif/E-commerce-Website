@@ -6,8 +6,9 @@ const PORT = process.env.PORT || 8080;
 const app = createApp({ serveSpa: true });
 
 async function start() {
-  await connectDB();
+  const connected = await connectDB();
   app.listen(PORT, () => {
+    if (!connected) console.warn("Using JSON store fallback (data/store.json)");
     console.log(`API: http://127.0.0.1:${PORT}/api/store`);
     console.log(`React dev: http://127.0.0.1:5173 (npm run client)`);
     console.log(`Production: npm run build && NODE_ENV=production npm start`);

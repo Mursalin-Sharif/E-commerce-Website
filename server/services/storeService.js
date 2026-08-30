@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const Store = require("../models/Store");
+const { isDbConnected } = require("../config/db");
 
 const JSON_PATH = path.join(__dirname, "..", "..", "data", "store.json");
 
@@ -29,6 +30,7 @@ function toPlainStore(doc) {
 }
 
 async function getStore() {
+  if (!isDbConnected()) return readJsonStore();
   const doc = await getStoreDocument();
   return toPlainStore(doc);
 }
@@ -36,6 +38,9 @@ async function getStore() {
 async function saveStore(payload) {
   if (!payload || typeof payload !== "object") {
     throw new Error("Invalid store payload");
+  }
+  if (!isDbConnected()) {
+    throw new Error("Database unavailable — connect MongoDB to save changes");
   }
   const doc = await getStoreDocument();
   const { key, _id, __v, createdAt, updatedAt, ...data } = payload;

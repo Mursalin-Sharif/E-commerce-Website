@@ -7,7 +7,8 @@ let ready;
 
 async function getApp() {
   if (!ready) {
-    ready = connectDB().then(() => {
+    ready = connectDB().then((connected) => {
+      if (!connected) console.warn("API running with JSON store fallback");
       app = createApp({ serveSpa: false });
       return app;
     });
